@@ -1,0 +1,62 @@
+Step 1: Shadow People
+In this step, you'll create a "secret" user named sysd. Anyone examining /etc/passwd will assume that this is a service account, but in fact, you'll be using it to reconnect to the target machine for further exploitation.
+
+Create a sysd user.
+
+Give your user a password (make sure you remember it).
+
+Give your user a system UID (any UID below 1000).
+
+Give your user a GID equal to this UID.
+
+Give your user full sudo access without a password.
+
+Minimize exposure by ensuring that your secret user does not have a home folder.
+Test that your sysd user can execute commands with sudo access without a password before moving on.
+
+Try running sudo -l to test. If the terminal does not prompt you for a password, it was a success. Attempt any other commands that require elevated privileges and mark them in your Submission File.
+note
+If a hacker can rapidly execute commands on a machine with elevated privileges, they can more quickly exfiltrate important data from the target machine.
+
+Step 2: Smooth Sailing
+In this step, you'll allow SSH access via port 2222. SSH usually runs on port 22, but opening port 2222 will allow you to log in as your secret sysd user without connecting to the standard (and well-guarded) port 22.
+
+Use Nano to update the /etc/ssh/sshd_config configuration file to allow SSH access via port 2222:
+
+When you open the configuration file, add a secondary SSH port line under port 22.
+
+This will require some research. Start by examining /etc/ssh/sshd_config and using online searches or man pages to learn more about the available configuration options.
+
+Step 3: Testing Your Configuration Update
+When you think you've configured things properly, test your solution by testing the new backdoor SSH port. Do the following steps on the target machine:
+
+First, note that the IP address of the target machine is 192.168.6.105. You'll need this for when you attempt to log back into the target machine.
+
+Make sure to restart the SSH service.
+Exit the root account, and log off of the target machine (you'll know you're back in your attacker machine when the prompt turns green).
+
+Use your attacking machine to test the new backdoor SSH port:
+
+SSH back into the target machine as your sysd user, but this time change the port from 22 to 2222 using: ssh sysd@192.168.6.105 -p 2222
+Once you are connected to the target machine over SSH, use sudo su to switch back to the root user.
+
+note
+This is an important step. You were able to log out of your root account, and then reestablish a remote session with escalated privileges through a different, un-guarded port.
+
+Company servers that house sensitive information will often use monitoring and hardening tools to closely watch key ports, such as 22 for SSH.
+It is also quite difficult for hackers, on their first breached connection, to know the locations of the most sensitive files in a system.
+For this reason, hackers must both attempt to mask their activity (as you are doing with your sysd user), and also ensure that they can discreetly revisit a system. This allows them to maximize the amount of data they can take from the target machine.
+Step 4: Crack All the Passwords
+Next, to strengthen our control of this system, we will attempt to crack as many passwords as we can.
+
+Having access to all the accounts will also allow us to access the system if our other backdoors are closed.
+
+Make sure that you have SSH-ed into the target machine using your sysd account.
+
+Escalate your privileges to the root user.
+
+Use John to crack the entire /etc/shadow file.
+
+You will not need to transfer the file, as John is already installed on the scavenger hunt VM.
+note
+Cracking passwords is a process that takes time. Now might be a good opportunity to take a break and let the computer do the work for you.
